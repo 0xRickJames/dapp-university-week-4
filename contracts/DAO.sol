@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: WTFPL
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
-import "./Token.sol";
+import 'hardhat/console.sol';
+import './Token.sol';
 
 contract DAO {
     address owner;
@@ -35,7 +35,7 @@ contract DAO {
     receive() external payable {}
 
     modifier onlyInvestor() {
-        require(Token(token).balanceOf(msg.sender) > 0, "must be token holder");
+        require(Token(token).balanceOf(msg.sender) > 0, 'must be token holder');
         _;
     }
 
@@ -69,7 +69,7 @@ contract DAO {
         Proposal storage proposal = proposals[_id];
 
         // Don't let investors vote twice
-        require(!votes[msg.sender][_id], "already voted");
+        require(!votes[msg.sender][_id], 'already voted');
 
         // update votes
         proposal.votes += token.balanceOf(msg.sender);
@@ -86,7 +86,7 @@ contract DAO {
         Proposal storage proposal = proposals[_id];
 
         // Ensure proposal is not already finalized
-        require(proposal.finalized == false, "proposal already finalized");
+        require(proposal.finalized == false, 'proposal already finalized');
 
         // Mark proposal as finalized
         proposal.finalized = true;
@@ -94,14 +94,14 @@ contract DAO {
         // Check that proposal has enough votes
         require(
             proposal.votes >= quorum,
-            "must reach quorum to finalize proposal"
+            'must reach quorum to finalize proposal'
         );
 
         // Check that the contract has enough ether
         require(address(this).balance >= proposal.amount);
 
         // Transfer the funds
-        (bool sent, ) = proposal.recipient.call{value: proposal.amount}("");
+        (bool sent, ) = proposal.recipient.call{value: proposal.amount}('');
         require(sent);
 
         // Emite event

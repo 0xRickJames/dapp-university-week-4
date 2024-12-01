@@ -101,7 +101,7 @@ async function main() {
   await transaction.wait()
 
   // Vote 1
-  transaction = await dao.connect(investor1).vote(4)
+  transaction = await dao.connect(investor3).vote(4)
   await transaction.wait()
 
   // Vote 2

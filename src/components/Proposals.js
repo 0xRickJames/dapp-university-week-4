@@ -1,5 +1,5 @@
-import Table from 'react-bootstrap/Table';
-import Button from 'react-bootstrap/Button';
+import Table from 'react-bootstrap/Table'
+import Button from 'react-bootstrap/Button'
 import { ethers } from 'ethers'
 
 const Proposals = ({ provider, dao, proposals, quorum, setIsLoading }) => {
@@ -16,6 +16,7 @@ const Proposals = ({ provider, dao, proposals, quorum, setIsLoading }) => {
   }
 
   const finalizeHandler = async (id) => {
+    console.log('Finalizing proposal:', id.toString())
     try {
       const signer = await provider.getSigner()
       const transaction = await dao.connect(signer).finalizeProposal(id)
@@ -47,7 +48,7 @@ const Proposals = ({ provider, dao, proposals, quorum, setIsLoading }) => {
             <td>{proposal.id.toString()}</td>
             <td>{proposal.name}</td>
             <td>{proposal.recipient}</td>
-            <td>{ethers.utils.formatUnits(proposal.amount, "ether")} ETH</td>
+            <td>{ethers.utils.formatUnits(proposal.amount, 'ether')} ETH</td>
             <td>{proposal.finalized ? 'Approved' : 'In Progress'}</td>
             <td>{proposal.votes.toString()}</td>
             <td>
@@ -55,7 +56,9 @@ const Proposals = ({ provider, dao, proposals, quorum, setIsLoading }) => {
                 <Button
                   variant="primary"
                   style={{ width: '100%' }}
-                  onClick={() => voteHandler(proposal.id)}
+                  onClick={() => {
+                    voteHandler(proposal.id)
+                  }}
                 >
                   Vote
                 </Button>
@@ -76,7 +79,7 @@ const Proposals = ({ provider, dao, proposals, quorum, setIsLoading }) => {
         ))}
       </tbody>
     </Table>
-  );
+  )
 }
 
-export default Proposals;
+export default Proposals

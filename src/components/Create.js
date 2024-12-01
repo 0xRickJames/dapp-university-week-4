@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
-import Spinner from 'react-bootstrap/Spinner';
+import { useState } from 'react'
+import Form from 'react-bootstrap/Form'
+import Button from 'react-bootstrap/Button'
+import Spinner from 'react-bootstrap/Spinner'
 import { ethers } from 'ethers'
 
 const Create = ({ provider, dao, setIsLoading }) => {
@@ -13,12 +13,16 @@ const Create = ({ provider, dao, setIsLoading }) => {
   const createHandler = async (e) => {
     e.preventDefault()
     setIsWaiting(true)
-
     try {
       const signer = await provider.getSigner()
-      const formattedAmount = ethers.utils.parseUnits(amount.toString(), 'ether')
+      const formattedAmount = ethers.utils.parseUnits(
+        amount.toString(),
+        'ether'
+      )
 
-      const transaction = await dao.connect(signer).createProposal(name, formattedAmount, address)
+      const transaction = await dao
+        .connect(signer)
+        .createProposal(name, formattedAmount, address)
       await transaction.wait()
     } catch {
       window.alert('User rejected or transaction reverted')
@@ -27,31 +31,34 @@ const Create = ({ provider, dao, setIsLoading }) => {
     setIsLoading(true)
   }
 
-  return(
+  return (
     <Form onSubmit={createHandler}>
       <Form.Group style={{ maxWidth: '450px', margin: '50px auto' }}>
         <Form.Control
-          type='text'
-          placeholder='Enter name'
-          className='my-2'
+          type="text"
+          placeholder="Enter name"
+          className="my-2"
           onChange={(e) => setName(e.target.value)}
         />
         <Form.Control
-          type='number'
-          placeholder='Enter amount'
-          className='my-2'
+          type="number"
+          placeholder="Enter amount"
+          className="my-2"
           onChange={(e) => setAmount(e.target.value)}
         />
         <Form.Control
-          type='text'
-          placeholder='Enter address'
-          className='my-2'
+          type="text"
+          placeholder="Enter address"
+          className="my-2"
           onChange={(e) => setAddress(e.target.value)}
         />
         {isWaiting ? (
-          <Spinner animation="border" style={{ display: 'block', margin: '0 auto' }} />
+          <Spinner
+            animation="border"
+            style={{ display: 'block', margin: '0 auto' }}
+          />
         ) : (
-          <Button variant='primary' type='submit' style={{ width: '100%' }}>
+          <Button variant="primary" type="submit" style={{ width: '100%' }}>
             Create Proposal
           </Button>
         )}
@@ -60,4 +67,4 @@ const Create = ({ provider, dao, setIsLoading }) => {
   )
 }
 
-export default Create;
+export default Create
