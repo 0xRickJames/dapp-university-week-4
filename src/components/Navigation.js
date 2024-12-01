@@ -1,10 +1,9 @@
-import Navbar from 'react-bootstrap/Navbar';
-
-import logo from '../logo.png';
+import Navbar from 'react-bootstrap/Navbar'
+import logo from '../logo.png'
 
 const Navigation = ({ account }) => {
   return (
-    <Navbar className='my-3'>
+    <Navbar className="my-3">
       <img
         alt="logo"
         src={logo}
@@ -14,12 +13,10 @@ const Navigation = ({ account }) => {
       />
       <Navbar.Brand href="#">Dapp University DAO</Navbar.Brand>
       <Navbar.Collapse className="justify-content-end">
-        <Navbar.Text>
-          {account.slice(0, 5) + '...' + account.slice(38, 42)}
-        </Navbar.Text>
+        <Navbar.Text>{account && <span>{account}</span>}</Navbar.Text>
       </Navbar.Collapse>
     </Navbar>
-  );
+  )
 }
 
-export default Navigation;
+export default Navigation
