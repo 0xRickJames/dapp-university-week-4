@@ -23,6 +23,8 @@ async function main() {
   const investor2 = accounts[2]
   const investor3 = accounts[3]
   const recipient = accounts[4]
+  const investor4 = accounts[5]
+  const investor5 = accounts[6]
 
   // Fetch network
   const { chainId } = await hre.ethers.provider.getNetwork()
@@ -52,6 +54,16 @@ async function main() {
     .transfer(investor3.address, tokens(200000))
   await transaction.wait()
 
+  transaction = await token
+    .connect(funder)
+    .transfer(investor4.address, tokens(200000))
+  await transaction.wait()
+
+  transaction = await token
+    .connect(funder)
+    .transfer(investor5.address, tokens(200000))
+  await transaction.wait()
+
   console.log(`Fetching DAO...\n`)
 
   // Fetch depolyed dao
@@ -70,19 +82,30 @@ async function main() {
     // Create proposal
     transaction = await dao
       .connect(investor1)
-      .createProposal(`Proposal ${i + 1}`, tokens(100), recipient.address)
+      .createProposal(
+        `Proposal ${i + 1}`,
+        `${i + 1}${
+          i + 1 === 1 ? 'st' : i + 1 === 2 ? 'nd' : i + 1 === 3 ? 'rd' : 'th'
+        } Proposal`,
+        tokens(100),
+        recipient.address
+      )
     await transaction.wait()
 
-    // Vote 1
-    transaction = await dao.connect(investor1).vote(i + 1)
+    // upVote 1
+    transaction = await dao.connect(investor1).upVote(i + 1)
     await transaction.wait()
 
-    // Vote 2
-    transaction = await dao.connect(investor2).vote(i + 1)
+    // upVote 2
+    transaction = await dao.connect(investor2).upVote(i + 1)
     await transaction.wait()
 
-    // Vote 3
-    transaction = await dao.connect(investor3).vote(i + 1)
+    // upVote 3
+    transaction = await dao.connect(investor3).upVote(i + 1)
+    await transaction.wait()
+
+    // downVote 1
+    transaction = await dao.connect(investor4).downVote(i + 1)
     await transaction.wait()
 
     // Finalize
@@ -97,15 +120,28 @@ async function main() {
   // Create one more proposal
   transaction = await dao
     .connect(investor1)
-    .createProposal(`Proposal 4`, tokens(100), recipient.address)
+    .createProposal(
+      `Proposal 4`,
+      '4th Proposal',
+      tokens(100),
+      recipient.address
+    )
   await transaction.wait()
 
-  // Vote 1
-  transaction = await dao.connect(investor3).vote(4)
+  // upVote 1
+  transaction = await dao.connect(investor3).upVote(4)
   await transaction.wait()
 
-  // Vote 2
-  transaction = await dao.connect(investor2).vote(4)
+  // upVote 2
+  transaction = await dao.connect(investor2).upVote(4)
+  await transaction.wait()
+
+  // downVote 1
+  transaction = await dao.connect(investor4).downVote(4)
+  await transaction.wait()
+
+  // downVote 2
+  transaction = await dao.connect(investor5).downVote(4)
   await transaction.wait()
 
   console.log(`Finished\n`)

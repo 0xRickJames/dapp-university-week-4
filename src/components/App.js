@@ -97,6 +97,7 @@ function App() {
             proposals={proposals}
             quorum={quorum}
             setIsLoading={setIsLoading}
+            account={account}
           />
         </>
       )}
