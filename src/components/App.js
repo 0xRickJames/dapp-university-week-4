@@ -10,6 +10,7 @@ import Loading from './Loading'
 
 // ABIs: Import your contract ABIs here
 import DAO_ABI from '../abis/DAO.json'
+import TOKEN_ABI from '../abis/Token.json'
 
 // Config: Import your network config  here
 import config from '../config.json'
@@ -18,6 +19,7 @@ function App() {
   const [provider, setProvider] = useState(null)
 
   const [dao, setDao] = useState(null)
+  const [payToken, setPayToken] = useState(null)
   const [treasuryBalance, setTreasuryBalance] = useState(0)
 
   const [account, setAccount] = useState(null)
@@ -40,8 +42,15 @@ function App() {
     )
     setDao(dao)
 
+    const payToken = new ethers.Contract(
+      config[31337].payToken.address,
+      TOKEN_ABI,
+      provider
+    )
+    setPayToken(payToken)
+
     // Fetch treasury balance
-    let treasuryBalance = await provider.getBalance(dao.address)
+    let treasuryBalance = await payToken.balanceOf(dao.address)
     treasuryBalance = ethers.utils.formatUnits(treasuryBalance, 18)
     setTreasuryBalance(treasuryBalance)
 
@@ -87,7 +96,7 @@ function App() {
           <Create provider={provider} dao={dao} setIsLoading={setIsLoading} />
           <hr />
           <p className="text-center">
-            <strong>Treasury Balance</strong> {treasuryBalance} ETH
+            <strong>Treasury Balance</strong> {treasuryBalance} FUSDC
           </p>
           <hr />
 
@@ -98,6 +107,7 @@ function App() {
             quorum={quorum}
             setIsLoading={setIsLoading}
             account={account}
+            payToken={payToken}
           />
         </>
       )}

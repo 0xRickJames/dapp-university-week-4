@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
+import 'hardhat/console.sol';
 
 contract Token {
     string public name;
@@ -12,11 +12,7 @@ contract Token {
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
 
-    event Transfer(
-        address indexed from,
-        address indexed to,
-        uint256 value
-    );
+    event Transfer(address indexed from, address indexed to, uint256 value);
 
     event Approval(
         address indexed owner,
@@ -31,14 +27,14 @@ contract Token {
     ) {
         name = _name;
         symbol = _symbol;
-        totalSupply = _totalSupply * (10**decimals);
+        totalSupply = _totalSupply * (10 ** decimals);
         balanceOf[msg.sender] = totalSupply;
     }
 
-    function transfer(address _to, uint256 _value)
-        public
-        returns (bool success)
-    {
+    function transfer(
+        address _to,
+        uint256 _value
+    ) public returns (bool success) {
         require(balanceOf[msg.sender] >= _value);
 
         _transfer(msg.sender, _to, _value);
@@ -46,11 +42,7 @@ contract Token {
         return true;
     }
 
-    function _transfer(
-        address _from,
-        address _to,
-        uint256 _value
-    ) internal {
+    function _transfer(address _from, address _to, uint256 _value) internal {
         require(_to != address(0));
 
         balanceOf[_from] = balanceOf[_from] - _value;
@@ -59,10 +51,10 @@ contract Token {
         emit Transfer(_from, _to, _value);
     }
 
-    function approve(address _spender, uint256 _value)
-        public
-        returns(bool success)
-    {
+    function approve(
+        address _spender,
+        uint256 _value
+    ) public returns (bool success) {
         require(_spender != address(0));
 
         allowance[msg.sender][_spender] = _value;
@@ -75,10 +67,7 @@ contract Token {
         address _from,
         address _to,
         uint256 _value
-    )
-        public
-        returns (bool success)
-    {
+    ) public returns (bool success) {
         require(_value <= balanceOf[_from]);
         require(_value <= allowance[_from][msg.sender]);
 
@@ -89,4 +78,10 @@ contract Token {
         return true;
     }
 
+    // Function to show the balance of the tokens in a users wallet address
+    function balanceOfTokens(
+        address _owner
+    ) public view returns (uint256 balance) {
+        return balanceOf[_owner];
+    }
 }

@@ -8,7 +8,7 @@ const tokens = (n) => {
 const ether = tokens
 
 describe('DAO', () => {
-  let dao, token, transaction
+  let dao, govToken, transaction, payToken
   let deployer,
     funder,
     investor1,
@@ -32,50 +32,96 @@ describe('DAO', () => {
     recipient = accounts[7]
     user = accounts[8]
 
-    // Deploy Token
-    const Token = await ethers.getContractFactory('Token')
-    token = await Token.deploy('Dapp University', 'DAPP', '1000000')
+    // Deploy GovToken
+    const GovToken = await ethers.getContractFactory('Token')
+    govToken = await GovToken.deploy('Dapp University', 'DAPP', '1000000')
 
-    // Send tokens to investors - each one gets 20%
-    transaction = await token
+    // Send govTokens to investors - each one gets 20%
+    transaction = await govToken
       .connect(deployer)
       .transfer(investor1.address, tokens(200000))
     await transaction.wait()
 
-    transaction = await token
+    transaction = await govToken
       .connect(deployer)
       .transfer(investor2.address, tokens(200000))
     await transaction.wait()
 
-    transaction = await token
+    transaction = await govToken
       .connect(deployer)
       .transfer(investor3.address, tokens(200000))
     await transaction.wait()
 
-    transaction = await token
+    transaction = await govToken
       .connect(deployer)
       .transfer(investor4.address, tokens(200000))
     await transaction.wait()
 
-    transaction = await token
+    transaction = await govToken
       .connect(deployer)
       .transfer(investor5.address, tokens(200000))
+    await transaction.wait()
+
+    // Deploy PayToken
+    const PayToken = await ethers.getContractFactory('Token')
+    payToken = await PayToken.deploy('Fake USDC', 'FUSDC', '1000000')
+
+    //Send payTokens to investors - each one gets 10%
+
+    transaction = await payToken
+      .connect(deployer)
+      .transfer(investor1.address, tokens(1000))
+    await transaction.wait()
+
+    transaction = await payToken
+      .connect(deployer)
+      .transfer(investor2.address, tokens(1000))
+    await transaction.wait()
+
+    transaction = await payToken
+      .connect(deployer)
+      .transfer(investor3.address, tokens(1000))
+    await transaction.wait()
+
+    transaction = await payToken
+      .connect(deployer)
+      .transfer(investor4.address, tokens(1000))
+    await transaction.wait()
+
+    transaction = await payToken
+      .connect(deployer)
+      .transfer(investor5.address, tokens(1000))
     await transaction.wait()
 
     // Deploy DAO
     // Set Quorum to > 50% of token total supply. 500K tokens + 1 wei, i.e. 500000000000000000000001
     const DAO = await ethers.getContractFactory('DAO')
-    dao = await DAO.deploy(token.address, '500000000000000000000001')
+    dao = await DAO.deploy(
+      govToken.address,
+      '500000000000000000000001',
+      payToken.address
+    )
 
+    // Send 100 ether to DAO
     await funder.sendTransaction({ to: dao.address, value: ether(100) })
+
+    // Send 100 FUSDC to DAO
+    transaction = await payToken
+      .connect(deployer)
+      .transfer(dao.address, tokens(100))
+    await transaction.wait()
   })
 
   describe('Deployment', () => {
-    it('sends ether to the DAO treasury', async () => {
-      expect(await ethers.provider.getBalance(dao.address)).to.equal(ether(100))
+    it('sends payTokens to the DAO treasury', async () => {
+      expect(await payToken.balanceOf(dao.address)).to.equal(tokens(100))
     })
-    it('has correct Token', async () => {
-      expect(await dao.token()).to.equal(token.address)
+    it('has correct Gov Token', async () => {
+      expect(await dao.govToken()).to.equal(govToken.address)
+    })
+
+    it('has correct Pay Token', async () => {
+      expect(await dao.payToken()).to.equal(payToken.address)
     })
 
     it('returns quorum', async () => {
@@ -155,7 +201,7 @@ describe('DAO', () => {
             .createProposal(
               'Proposal 1',
               'bad amount',
-              ether(1000),
+              ether(10000),
               recipient.address
             )
         ).to.be.reverted
@@ -311,10 +357,9 @@ describe('DAO', () => {
           result = await transaction.wait()
         })
 
-        it('transfers funds to recipient', async () => {
-          expect(await ethers.provider.getBalance(recipient.address)).to.equal(
-            tokens(10100)
-          )
+        it('transfers payTokens to recipient', async () => {
+          let balance = await payToken.balanceOf(recipient.address)
+          expect(balance).to.equal(tokens(100))
         })
 
         it('updates proposal to approved', async () => {

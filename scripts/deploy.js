@@ -7,20 +7,35 @@
 const hre = require('hardhat')
 
 async function main() {
-  const NAME = 'Dapp University'
-  const SYMBOL = 'DAPP'
-  const MAX_SUPPLY = '1000000'
+  const GOV_NAME = 'Dapp University'
+  const GOV_SYMBOL = 'DAPP'
+  const GOV_MAX_SUPPLY = '1000000'
 
-  // Deploy Token
-  const Token = await hre.ethers.getContractFactory('Token')
-  let token = await Token.deploy(NAME, SYMBOL, MAX_SUPPLY)
+  const PAY_NAME = 'Fake USDC'
+  const PAY_SYMBOL = 'FUSDC'
+  const PAY_MAX_SUPPLY = '1000000'
 
-  await token.deployed()
-  console.log(`Token deployed to: ${token.address}\n`)
+  // Deploy Gov Token
+  const GovToken = await hre.ethers.getContractFactory('Token')
+  let govToken = await GovToken.deploy(GOV_NAME, GOV_SYMBOL, GOV_MAX_SUPPLY)
+
+  await govToken.deployed()
+  console.log(`${GOV_SYMBOL} Token deployed to: ${govToken.address}\n`)
+
+  // Deploy Pay Token
+  const PayToken = await hre.ethers.getContractFactory('Token')
+  let payToken = await PayToken.deploy(PAY_NAME, PAY_SYMBOL, PAY_MAX_SUPPLY)
+
+  await payToken.deployed()
+  console.log(`${PAY_SYMBOL} Token deployed to: ${payToken.address}\n`)
 
   // Deploy DAO
   const DAO = await hre.ethers.getContractFactory('DAO')
-  const dao = await DAO.deploy(token.address, '500000000000000000000001')
+  const dao = await DAO.deploy(
+    govToken.address,
+    '500000000000000000000001',
+    payToken.address
+  )
   await dao.deployed()
 
   console.log(`DAO deployed to: ${dao.address}\n`)

@@ -16,6 +16,7 @@ const Proposals = ({
   quorum,
   setIsLoading,
   account,
+  payToken,
 }) => {
   const [balances, setBalances] = useState({}) // State to hold recipient balances
   const [userVotes, setUserVotes] = useState({}) // To store user's vote status per proposal
@@ -49,7 +50,7 @@ const Proposals = ({
     const fetchBalances = async () => {
       const newBalances = {}
       for (const proposal of proposals) {
-        const balance = await provider.getBalance(proposal.recipient)
+        const balance = await payToken.balanceOf(proposal.recipient)
         newBalances[proposal.recipient] = ethers.utils.formatEther(balance) // Format balance in Ether
       }
       setBalances(newBalances)
@@ -144,10 +145,10 @@ const Proposals = ({
               {shortenAddress(proposal.recipient)}
               <br />
               {balances[proposal.recipient]
-                ? `${Number(balances[proposal.recipient]).toFixed(4)} ETH`
+                ? `${Number(balances[proposal.recipient]).toFixed(4)} FUSDC`
                 : 'Loading...'}
             </td>
-            <td>{ethers.utils.formatUnits(proposal.amount, 'ether')} ETH</td>
+            <td>{ethers.utils.formatUnits(proposal.amount, 'ether')} FUSDC</td>
             <td>
               {proposal.finalized && proposal.approved
                 ? 'Approved'

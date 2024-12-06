@@ -6,8 +6,9 @@ import './Token.sol';
 
 contract DAO {
     address owner;
-    Token public token;
+    Token public govToken;
     uint256 public quorum;
+    Token public payToken;
 
     struct Proposal {
         uint256 id;
@@ -29,17 +30,21 @@ contract DAO {
     event DownVote(uint256 id, address investor);
     event Finalize(uint256 id, bool approved);
 
-    constructor(Token _token, uint256 _quorum) {
+    constructor(Token _token, uint256 _quorum, Token _payToken) {
         owner = msg.sender;
-        token = _token;
+        govToken = _token;
         quorum = _quorum;
+        payToken = _payToken;
     }
 
     // Allow contract to receive ether
     receive() external payable {}
 
     modifier onlyInvestor() {
-        require(Token(token).balanceOf(msg.sender) > 0, 'must be token holder');
+        require(
+            Token(govToken).balanceOf(msg.sender) > 0,
+            'must be token holder'
+        );
         _;
     }
 
@@ -51,7 +56,11 @@ contract DAO {
         uint256 _amount,
         address payable _recipient
     ) external onlyInvestor {
-        require(address(this).balance >= _amount);
+        // Make sure the msg.sender has enough payTokens
+        require(
+            payToken.balanceOf(msg.sender) >= _amount,
+            'not enough payTokens'
+        );
 
         // Make sure _recipient is a valid address
         require(_recipient != address(0), 'invalid recipient');
@@ -105,7 +114,7 @@ contract DAO {
         require(!downVotes[msg.sender][_id], 'already downVoted');
 
         // update upVotes
-        proposal.upVotes += token.balanceOf(msg.sender);
+        proposal.upVotes += govToken.balanceOf(msg.sender);
 
         // Track that user has upVoted
         upVotes[msg.sender][_id] = true;
@@ -125,7 +134,7 @@ contract DAO {
         require(!upVotes[msg.sender][_id], 'already upVoted');
 
         // update downVotes
-        proposal.downVotes += token.balanceOf(msg.sender);
+        proposal.downVotes += govToken.balanceOf(msg.sender);
 
         // Track that user has downVoted
         downVotes[msg.sender][_id] = true;
@@ -153,17 +162,29 @@ contract DAO {
         // update approved if upVotes > downVotes
         proposal.approved = proposal.upVotes >= proposal.downVotes;
 
-        // Check that the contract has enough ether
-        require(address(this).balance >= proposal.amount);
+        // Check that the contract has enough payTokens to transfer
+        require(
+            payToken.balanceOf(address(this)) >= proposal.amount,
+            'not enough payTokens in contract'
+        );
 
-        // Transfer the funds if proposal is approved
-        if (!proposal.approved) {
-            // Emite event
-            emit Finalize(_id, false);
-            return;
+        // Transfer the payTokens if proposal is approved
+        if (proposal.approved) {
+            uint256 beforeBalance = payToken.balanceOf(proposal.recipient);
+
+            // Perform the transfer
+            require(
+                payToken.transfer(proposal.recipient, proposal.amount),
+                'Transfer failed'
+            );
+
+            // Verify balance change
+            uint256 afterBalance = payToken.balanceOf(proposal.recipient);
+            require(
+                afterBalance == beforeBalance + proposal.amount,
+                'Incorrect token amount transferred'
+            );
         }
-        (bool sent, ) = proposal.recipient.call{value: proposal.amount}('');
-        require(sent);
 
         // Emite event
         emit Finalize(_id, proposal.upVotes >= quorum);

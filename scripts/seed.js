@@ -29,39 +29,73 @@ async function main() {
   // Fetch network
   const { chainId } = await hre.ethers.provider.getNetwork()
 
-  console.log(`Fetching token and transferring to accounts...\n`)
+  console.log(`Fetching govToken and transferring to accounts...\n`)
 
-  // Fetch deployed token
-  const token = await hre.ethers.getContractAt(
+  // Fetch deployed govToken
+  const govToken = await hre.ethers.getContractAt(
     'Token',
-    config[chainId].token.address
+    config[chainId].govToken.address
   )
-  console.log(`Token fetched: ${token.address}\n`)
+  console.log(`Token fetched: ${govToken.address}\n`)
 
   // Send tokens to investors - each one gets 20%
-  transaction = await token
+  transaction = await govToken
     .connect(funder)
     .transfer(investor1.address, tokens(200000))
   await transaction.wait()
 
-  transaction = await token
+  transaction = await govToken
     .connect(funder)
     .transfer(investor2.address, tokens(200000))
   await transaction.wait()
 
-  transaction = await token
+  transaction = await govToken
     .connect(funder)
     .transfer(investor3.address, tokens(200000))
   await transaction.wait()
 
-  transaction = await token
+  transaction = await govToken
     .connect(funder)
     .transfer(investor4.address, tokens(200000))
   await transaction.wait()
 
-  transaction = await token
+  transaction = await govToken
     .connect(funder)
     .transfer(investor5.address, tokens(200000))
+  await transaction.wait()
+
+  // Fetch deployed payToken
+  const payToken = await hre.ethers.getContractAt(
+    'Token',
+    config[chainId].payToken.address
+  )
+  console.log(`Token fetched: ${payToken.address}\n`)
+  console.log(`Transferring payToken to accounts...\n`)
+  // Send tokens to investors - each one gets 10%
+
+  transaction = await payToken
+    .connect(funder)
+    .transfer(investor1.address, tokens(10000))
+  await transaction.wait()
+
+  transaction = await payToken
+    .connect(funder)
+    .transfer(investor2.address, tokens(10000))
+  await transaction.wait()
+
+  transaction = await payToken
+    .connect(funder)
+    .transfer(investor3.address, tokens(10000))
+  await transaction.wait()
+
+  transaction = await payToken
+    .connect(funder)
+    .transfer(investor4.address, tokens(10000))
+  await transaction.wait()
+
+  transaction = await payToken
+    .connect(funder)
+    .transfer(investor5.address, tokens(10000))
   await transaction.wait()
 
   console.log(`Fetching DAO...\n`)
@@ -70,16 +104,24 @@ async function main() {
   const dao = await hre.ethers.getContractAt('DAO', config[chainId].dao.address)
   console.log(`DAO fetched: ${dao.address}\n`)
 
-  // Funder send Ether to DAO treasury
+  // Funder send ETH to DAO treasury
   transaction = await funder.sendTransaction({
     to: dao.address,
-    value: tokens(1000),
+    value: ether(1000),
   })
   await transaction.wait()
-  console.log(`Sent funds to dao treasury...\n`)
+  console.log(`Sent ETH to dao treasury...\n`)
+
+  // Funder send FUSDC to DAO treasury
+  transaction = await payToken
+    .connect(funder)
+    .transfer(dao.address, tokens(100000))
+  await transaction.wait()
+  console.log(`Sent payTokens to dao treasury...\n`)
 
   for (var i = 0; i < 3; i++) {
     // Create proposal
+    console.log(`Creating Proposal ${i + 1}...\n`)
     transaction = await dao
       .connect(investor1)
       .createProposal(
@@ -93,22 +135,27 @@ async function main() {
     await transaction.wait()
 
     // upVote 1
+    console.log(`Upvoting Proposal ${i + 1}...\n`)
     transaction = await dao.connect(investor1).upVote(i + 1)
     await transaction.wait()
 
     // upVote 2
+    console.log(`Upvoting Proposal ${i + 1}...\n`)
     transaction = await dao.connect(investor2).upVote(i + 1)
     await transaction.wait()
 
     // upVote 3
+    console.log(`Upvoting Proposal ${i + 1}...\n`)
     transaction = await dao.connect(investor3).upVote(i + 1)
     await transaction.wait()
 
     // downVote 1
+    console.log(`Downvoting Proposal ${i + 1}...\n`)
     transaction = await dao.connect(investor4).downVote(i + 1)
     await transaction.wait()
 
     // Finalize
+    console.log(`Finalizing Proposal ${i + 1}...\n`)
     transaction = await dao.connect(investor1).finalizeProposal(i + 1)
     await transaction.wait()
 

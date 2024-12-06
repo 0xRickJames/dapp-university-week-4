@@ -5,7 +5,7 @@ const Info = ({ account, accountBalance }) => {
         <strong>Account: </strong> {account}
       </p>
       <p>
-        <strong>ETH Balance:</strong> {accountBalance}
+        <strong>FUSDC Balance:</strong> {accountBalance}
       </p>
     </div>
   )
